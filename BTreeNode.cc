@@ -64,7 +64,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid) {
     int i = 1;
     int tmpKey;
     for (; i <= numKeys; i++) {
-        memcpy(&tmpKey, buffer + sizeof(numKeys) + (i - 1) * sizePair + sizeRid, sizeKey);
+        memcpy(&tmpKey, buffer + sizeof(numKeys)+ sizeRid + (i - 1) * sizePair , sizeKey);
         if (key < tmpKey) {
             break;
         }
@@ -120,8 +120,11 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
     memcpy(tmpBuffer + (i - 1) * sizePair, &rid, sizeRid);
 
 
-    int lefthalfNumKeys = ceil((maxKeys + 1) / 2);
+    int lefthalfNumKeys = ceil( (maxKeys + 1) / 2.0);
     int righthalfNumKeys = maxKeys + 1 - lefthalfNumKeys;
+
+
+
 
     // move the content of tmpBuffer to buffer and sibling.buffer
     memset(buffer, 0, sizeof(buffer) - sizeof(PageId));
@@ -133,7 +136,7 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
 
     memcpy(&siblingKey, sibling.buffer + sizeof(righthalfNumKeys) + sizeRid, sizeKey);
 
-    free(tmpBuffer);
+   // free(tmpBuffer);
 
     return 0;
 }
@@ -222,7 +225,7 @@ RC BTLeafNode::setNextNodePtr(PageId pid) {
 }
 
 BTLeafNode::BTLeafNode(){
-    maxKeys=84;
+    maxKeys=2;
     memset(buffer,0,sizeof(buffer) );
 }
 
@@ -231,6 +234,7 @@ void BTLeafNode::print() {
     int pairSize = sizeof(RecordId) + sizeof(int);
     char *temp = buffer;
     temp=temp+12;
+    cout << "--------leaf node---------" << endl;
     for (int i = 0; i < getKeyCount() * pairSize; i += pairSize) {
         int insideKey;
         memcpy(&insideKey, temp, sizeof(int));
@@ -239,7 +243,7 @@ void BTLeafNode::print() {
 
         temp += pairSize;
     }
-    cout << "" << endl;
+    cout <<endl<< "---------------------------" << endl;
 }
 
 
@@ -248,7 +252,7 @@ void BTLeafNode::print() {
 
 
 BTNonLeafNode::BTNonLeafNode(){
-    maxKeys=127;
+    maxKeys=2;
     memset(buffer,0,sizeof(buffer) );
 }
 
@@ -360,19 +364,25 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     memcpy(tmpBuffer + (i - 1) * sizePair, &key, sizeKey);
     memcpy(tmpBuffer + (i - 1) * sizePair + sizeKey, &pid, sizePageId);
 
-    int lefthalfNumKeys = ceil((maxKeys + 1) / 2);
-    int righthalfNumKeys = maxKeys + 1 - lefthalfNumKeys;
+    int lefthalfNumKeys = ceil((maxKeys + 1) / 2.0) - 1;
+    int righthalfNumKeys = maxKeys - lefthalfNumKeys;
+
+
 
     // move the content of tmpBuffer to buffer and sibling.buffer
     memset(buffer + sizeof(numKeys) + sizePageId, 0, maxKeys * sizePair);
     memcpy(buffer, &lefthalfNumKeys, sizeof(lefthalfNumKeys));
     memmove(buffer + sizeof(lefthalfNumKeys) + sizePageId, tmpBuffer, lefthalfNumKeys * sizePair);
     memcpy(sibling.buffer, &righthalfNumKeys, sizeof(righthalfNumKeys));
-    memmove(sibling.buffer + sizeof(righthalfNumKeys) + sizePageId, tmpBuffer + lefthalfNumKeys * sizePair, righthalfNumKeys * sizePair);
+//    memmove(sibling.buffer + sizeof(righthalfNumKeys) + sizePageId, tmpBuffer + lefthalfNumKeys * sizePair, righthalfNumKeys * sizePair);
+    memmove(sibling.buffer + sizeof(righthalfNumKeys), tmpBuffer + lefthalfNumKeys * sizePair+ sizeof(int) , righthalfNumKeys * sizePair+sizeof(int) );
 
-    memcpy(&midKey, buffer + sizeof(righthalfNumKeys) + sizePageId + (lefthalfNumKeys - 1) * sizePair, sizeKey);
 
-    free(tmpBuffer);
+    memcpy(&midKey, tmpBuffer +  lefthalfNumKeys * sizePair, sizeKey);
+
+
+
+   // free(tmpBuffer);
 
 
     return 0;
@@ -443,6 +453,8 @@ void BTNonLeafNode::print()
     //Skip the first 8 offset bytes, since there's no key there
     char* temp = buffer+8;
 
+    cout << "-----------nonleaf node------------------" << endl;
+
     for(int i=8; i<getKeyCount()*pairSize+8; i+=pairSize)
     {
         int insideKey;
@@ -454,5 +466,5 @@ void BTNonLeafNode::print()
         temp += pairSize; //Jump temp over to the next key
     }
 
-    cout << "" << endl;
+    cout <<endl<< "------------------------" << endl;
 }

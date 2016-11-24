@@ -11,6 +11,7 @@
 #include "BTreeNode.h"
 #include <iostream>
 #include <cstring>
+#include <queue>
 
 using namespace std;
 
@@ -93,8 +94,17 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
 
 
         if (toaddedkey!=-1 && toaddedpid!=-1){
+
             BTNonLeafNode newroot;
             int newrootpid = pf.endPid();
+//            if (treeHeight==2){
+//                cout<<toaddedkey<<"toaddedkey"<<endl;
+//                cout<<toaddedpid<<"toaddedpid"<<endl;
+//                cout<<newrootpid<<"newrootpid"<<endl;
+//                return 0;
+//            }
+
+
 
             newroot.initializeRoot(rootPid,toaddedkey,toaddedpid );
 
@@ -134,8 +144,11 @@ RC BTreeIndex::insertRec( int curpid,int curheight, int key, const RecordId& rid
             //newsibling.write(newsiblingpid,pf);
 
             /// update addedkey and addedpid for upper level to insert
-            leafNode.insertAndSplit(key,rid,newsibling,addedkey);  // leafnode connect sibling?
+            leafNode.insertAndSplit(key,rid,newsibling,addedkey);
             addedpid=newsiblingpid;
+
+            newsibling.setNextNodePtr(leafNode.getNextNodePtr());
+            leafNode.setNextNodePtr(newsiblingpid);
 
             ///  save current node and its new sibiling
             newsibling.write(newsiblingpid,pf);
@@ -175,11 +188,10 @@ RC BTreeIndex::insertRec( int curpid,int curheight, int key, const RecordId& rid
                 addedpid=newsiblingpid;
 
                 newsibling.write(newsiblingpid,pf);
-                nonLeafNode.write(curpid,pf);
+
             }
-
-
         }
+       nonLeafNode.write(curpid,pf);
         return 0;
 
 
@@ -262,52 +274,80 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
 
 void BTreeIndex::print()
 {
-    BTLeafNode root;
-    root.read(rootPid, pf);
-    root.print();
 
-//	if(treeHeight==1)
-//	{
-//		BTLeafNode root;
-//		root.read(rootPid, pf);
-//		root.print();
-//	}
-//	else if(treeHeight>1)
-//	{
+
+    //cout<<treeHeight<<"treeHeight"<<endl;
+
+//    BTNonLeafNode tmpnode;
+//    tmpnode.read(rootPid,pf);
+//    cout<<tmpnode.getKeyCount() <<"num of root keys"<<endl;
+    cout<<treeHeight<<"treeHeight"<<endl;
+	if(treeHeight==1)
+	{
+		BTLeafNode root;
+		root.read(rootPid, pf);
+		root.print();
+	}
+	else if(treeHeight>1)
+	{
 //		BTNonLeafNode root;
 //		root.read(rootPid, pf);
 //		root.print();
 //
-//		PageId first, rest;
-//		memcpy(&first, root.buffer, sizeof(PageId));
-//		BTLeafNode firstLeaf, leaf;
-//		firstLeaf.read(first, pf);
-//		firstLeaf.print();
-//
-//		//print the rest of the leaf nodes
-//		for(int i=0; i<root.getKeyCount(); i++)
+//        int rest;
+//        BTLeafNode leaf;
+        queue<int> q;
+
+        q.push(rootPid);
+
+ //       cout<< "number of keys in root: " << root.getKeyCount() << endl;
+//		for(int i=0; i<root.getKeyCount()+1; i++)
 //		{
-//			memcpy(&rest, root.buffer+12+(8*i), sizeof(PageId));
+//            memcpy(&rest, root.buffer+4+(8*i), sizeof(PageId));
 //			leaf.read(rest, pf);
 //			leaf.print();
+//
 //		}
-//
-//		//print each leaf node's current pid and next pid
-//		cout << "----------" << endl;
-//
-//		for(int i=0; i<root.getKeyCount(); i++)
-//		{
-//			if(i==0)
-//				cout << "leaf0 (pid=" << first << ") has next pid: " << firstLeaf.getNextNodePtr() << endl;
-//
-//			BTLeafNode tempLeaf;
-//			PageId tempPid;
-//			memcpy(&tempPid, root.buffer+12+(8*i), sizeof(PageId));
-//
-//			tempLeaf.read(tempPid, pf);;
-//
-//			cout << "leaf" << i+1 << " (pid=" << tempPid << ") has next pid: " << tempLeaf.getNextNodePtr() << endl;
-//		}
-//	}
 
+
+
+        int level=1;
+        while (!q.empty()){
+
+            int size = q.size();
+
+            cout<<"*****************"<<"level: "<<level<<"*****************"<<endl;
+
+            if (level==treeHeight){
+                for (int i=0;i<size;i++) {
+                    int curpid = q.front();
+                    q.pop();
+                    BTLeafNode node;
+                    node.read(curpid,pf);
+                    node.print();
+                }
+
+            }
+            else{
+                for (int i=0;i<size;i++){
+                    int curpid = q.front();
+                    q.pop();
+                    BTNonLeafNode node;
+                    node.read(curpid,pf);
+                    node.print();
+                    for(int i=0; i<node.getKeyCount()+1; i++)
+                    {
+                        int rest;
+                        memcpy(&rest, node.buffer+4+(8*i), sizeof(PageId));
+                        q.push(rest);
+                    }
+
+                }
+            }
+            level++;
+
+        }
+
+	}
 }
+

@@ -158,6 +158,8 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
 
     tree.open(table + ".idx", 'w');
 
+    int count=0;
+
     while ( getline (myfile,line) )
     {
 
@@ -173,7 +175,8 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
             if ((tree.insert(key, rid))<0){
                 return RC_FILE_WRITE_FAILED;
             }
-
+            count++;
+            cout<< "tuple number: "<< key <<endl;
         }
         
     }

@@ -102,7 +102,7 @@ public:
     void print();
     BTLeafNode();
 
-private:
+public:
 
     // 1024 - sizeof(numKeys) - sizeof(nextNodePid) = 1016 bytes;
     // 1016 / 12 = 84 ... 8
@@ -190,7 +190,7 @@ public:
 
     void print();
 
-private:
+public:
     // 1024 - sizeof(numKeys) - sizeof(PageId) = 1016;
     // 1016 / (sizeof(key) + sizeof(PageId)) = 127
 

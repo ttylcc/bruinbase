@@ -225,7 +225,8 @@ RC BTLeafNode::setNextNodePtr(PageId pid) {
 }
 
 BTLeafNode::BTLeafNode(){
-    maxKeys=2;
+    maxKeys=80;
+    //setNextNodePtr(-1);  // no use
     memset(buffer,0,sizeof(buffer) );
 }
 
@@ -252,7 +253,7 @@ void BTLeafNode::print() {
 
 
 BTNonLeafNode::BTNonLeafNode(){
-    maxKeys=2;
+    maxKeys=125;
     memset(buffer,0,sizeof(buffer) );
 }
 

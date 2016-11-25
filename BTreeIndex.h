@@ -95,13 +95,11 @@ class BTreeIndex {
   RC readForward(IndexCursor& cursor, int& key, RecordId& rid);
 
   void print();
-   // void printdfs();
 
 
-  void dfsprint(BTLeafNode node, int curheight,int treeHeight);
 
-  
- private:
+
+public:
 
   char buffer[PageFile::PAGE_SIZE];   /// the buffer is used to store the b+tree height and root info in the first page
 

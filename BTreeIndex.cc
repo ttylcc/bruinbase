@@ -49,6 +49,7 @@ RC BTreeIndex::open(const string& indexname, char mode)
         memcpy(&rootPid, buffer, sizeof(int));   // the root pid from the page0
         memcpy(&treeHeight, buffer+4, sizeof(int)); // get the tree height from page0
 
+
     }
 
     return 0;
@@ -81,6 +82,8 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
         rootPid = pf.endPid();
         newroot.insert(key,rid);
         treeHeight++;
+       // newroot.setNextNodePtr(-1);
+
         return newroot.write(rootPid,pf);
 
 
@@ -222,16 +225,16 @@ RC BTreeIndex::insertRec( int curpid,int curheight, int key, const RecordId& rid
  */
 RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
 {
-    int curheight=1;   // if treeheight<1   error
+    if (treeHeight==0) return -1;
+
+    int curheight=1;   // if c<1   error
     int curpid=rootPid;
     BTNonLeafNode nonleafNode;
     BTLeafNode leafNode;
 
-
     while (curheight!=treeHeight){
         nonleafNode.read(curpid,pf);
         nonleafNode.locateChildPtr(searchKey,curpid);
-
         curheight++;
     }
 
@@ -259,7 +262,6 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     BTLeafNode leafnode;
     leafnode.read(cursor.pid,pf);
     leafnode.readEntry(cursor.eid,key,rid);
-
     cursor.eid++;
     if (cursor.eid>leafnode.getKeyCount() ){
         cursor.pid=leafnode.getNextNodePtr();
@@ -276,11 +278,6 @@ void BTreeIndex::print()
 {
 
 
-    //cout<<treeHeight<<"treeHeight"<<endl;
-
-//    BTNonLeafNode tmpnode;
-//    tmpnode.read(rootPid,pf);
-//    cout<<tmpnode.getKeyCount() <<"num of root keys"<<endl;
     cout<<treeHeight<<"treeHeight"<<endl;
 	if(treeHeight==1)
 	{
@@ -290,26 +287,10 @@ void BTreeIndex::print()
 	}
 	else if(treeHeight>1)
 	{
-//		BTNonLeafNode root;
-//		root.read(rootPid, pf);
-//		root.print();
-//
-//        int rest;
-//        BTLeafNode leaf;
+
         queue<int> q;
 
         q.push(rootPid);
-
- //       cout<< "number of keys in root: " << root.getKeyCount() << endl;
-//		for(int i=0; i<root.getKeyCount()+1; i++)
-//		{
-//            memcpy(&rest, root.buffer+4+(8*i), sizeof(PageId));
-//			leaf.read(rest, pf);
-//			leaf.print();
-//
-//		}
-
-
 
         int level=1;
         while (!q.empty()){

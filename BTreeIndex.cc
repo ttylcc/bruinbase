@@ -82,7 +82,6 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
         rootPid = pf.endPid();
         newroot.insert(key,rid);
         treeHeight++;
-       // newroot.setNextNodePtr(-1);
 
         return newroot.write(rootPid,pf);
 
@@ -100,21 +99,12 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
 
             BTNonLeafNode newroot;
             int newrootpid = pf.endPid();
-//            if (treeHeight==2){
-//                cout<<toaddedkey<<"toaddedkey"<<endl;
-//                cout<<toaddedpid<<"toaddedpid"<<endl;
-//                cout<<newrootpid<<"newrootpid"<<endl;
-//                return 0;
-//            }
-
-
 
             newroot.initializeRoot(rootPid,toaddedkey,toaddedpid );
 
             newroot.write(newrootpid,pf);
 
             rootPid=newrootpid;
-            //pf.write(0,buffer);  //  pay attention   root node and height  has already changed
             treeHeight++;
         }
 

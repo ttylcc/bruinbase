@@ -226,7 +226,6 @@ RC BTLeafNode::setNextNodePtr(PageId pid) {
 
 BTLeafNode::BTLeafNode(){
     maxKeys=80;
-    //setNextNodePtr(-1);  // no use
     memset(buffer,0,sizeof(buffer) );
 }
 
@@ -300,19 +299,16 @@ int BTNonLeafNode::getKeyCount() {
  */
 RC BTNonLeafNode::insert(int key, PageId pid) {
 
-    //how to deal with the first pageid?
-
     int numKeys = getKeyCount();
 
     int sizePageId = sizeof(PageId);
     int sizeKey = sizeof(key);
-    int sizePair = sizePageId + sizeKey;    // 8 bytes per pair
+    int sizePair = sizePageId + sizeKey;
 
     if (numKeys == maxKeys) {
         return RC_NODE_FULL;
     }
 
-    // if numKeys == 0, no need to go into loop
     int i = 1;
     int tmpKey;
     for (; i <= numKeys; i++) {
@@ -375,7 +371,6 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     memcpy(buffer, &lefthalfNumKeys, sizeof(lefthalfNumKeys));
     memmove(buffer + sizeof(lefthalfNumKeys) + sizePageId, tmpBuffer, lefthalfNumKeys * sizePair);
     memcpy(sibling.buffer, &righthalfNumKeys, sizeof(righthalfNumKeys));
-//    memmove(sibling.buffer + sizeof(righthalfNumKeys) + sizePageId, tmpBuffer + lefthalfNumKeys * sizePair, righthalfNumKeys * sizePair);
     memmove(sibling.buffer + sizeof(righthalfNumKeys), tmpBuffer + lefthalfNumKeys * sizePair+ sizeof(int) , righthalfNumKeys * sizePair+sizeof(int) );
 
 

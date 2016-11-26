@@ -140,8 +140,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
     BTreeIndex tree;
     int errortree = tree.open(table + ".idx", 'r');
-//    cout<< "errortree"<<errortree<<endl;
-//    cout<< "treeHeight"<<tree.treeHeight<<endl;
+
 
     IndexCursor cursor;
 
@@ -225,12 +224,9 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     }
 
 
-//    cout<<"min"<<min<<endl;
-//    cout<<"max"<<max<<endl;
 
-  //  useBindextree=false;
     if (errortree==0 && useBindextree){
-        cout<< "using Bindex tree now"<<endl;
+        //cout<< "using Bindex tree now"<<endl;
         if (couldminequal){
             tree.locate(min,cursor);
         }
@@ -240,10 +236,6 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         int tmpcount=0;
         count = 0;
         while(tree.readForward(cursor, key, rid)==0){
-
-//            cout<< "cursor.pid"<<cursor.pid<<endl;
-//            cout<< "cursor.eid"<<cursor.eid<<endl;
-           // cout<< "tmp count"<<tmpcount<<endl;
 
             if (max!=-1 && ((key>max && couldmaxequal) ||(key>=max && !couldmaxequal))){
                 break;
@@ -319,7 +311,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
     }
     else{
-        cout<< "full scan the recode file "<<endl;
+        //cout<< "full scan the recode file "<<endl;
         // scan the table file from the beginning
         rid.pid = rid.sid = 0;
         count = 0;
@@ -411,7 +403,7 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
 {
   /* your code here */
 
-    index=true;
+    //index=true;
 
 
     RC rc = 0;
@@ -424,7 +416,6 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
     
     string tablename = std::string(table)+".tbl";
     RecordFile rf;
-    BTreeIndex Bindex;
 
     std::ifstream myfile(loadfile.c_str());
     rf.open(tablename.c_str(),'w');
@@ -451,7 +442,7 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
                 return RC_FILE_WRITE_FAILED;
             }
             count++;
-            cout<< "tuple number: "<< key <<endl;
+           // cout<< "tuple number: "<< key <<endl;
         }
         
     }
